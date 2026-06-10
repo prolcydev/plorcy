@@ -1,37 +1,46 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
 // CREATE user
 app.post("/users", async (req, res) => {
-  const { name, email, phone } = req.body;
-
   try {
+    const { name, email, phone } = req.body;
+
     const user = await prisma.user.create({
-      data: { name, email, phone },
+      data: {
+        name,
+        email,
+        phone,
+      },
     });
-    res.json(user);
+
+    res.status(201).json(user);
+
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    console.error("USER CREATE ERROR:", error);
+
+    res.status(500).json({
+      error: error.message,
+    });
   }
 });
-const path = require("path");
 
+// Serve frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// GET all users
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+const PORT = process.env.PORT || 5000;
 
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
