@@ -27,10 +27,11 @@ app.post("/users", async (req, res) => {
     });
 
     res.status(201).json(user);
+
   } catch (error) {
     console.error("USER CREATE ERROR:", error);
 
-    // Handle duplicate email error
+    // Handle duplicate email
     if (error.code === "P2002") {
       return res.status(400).json({
         error: "Email already exists",
@@ -60,14 +61,42 @@ app.get("/users", async (req, res) => {
 });
 
 /* =========================
-   SERVE FRONTEND
+   DELETE USER
+========================= */
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.user.delete({
+      where: {
+        id: Number(id),
+      },
+    });
+
+    res.json({ message: "User deleted successfully" });
+
+  } catch (error) {
+    console.error("DELETE USER ERROR:", error);
+
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+});
+
+/* =========================
+   FRONTEND ROUTES
 ========================= */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "admin.html"));
+});
+
 /* =========================
-   START SERVER (RENDER SAFE)
+   START SERVER (RENDER READY)
 ========================= */
 const PORT = process.env.PORT || 5000;
 
